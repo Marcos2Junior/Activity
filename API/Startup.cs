@@ -13,7 +13,6 @@ using System.Text;
 using AutoMapper;
 using Repository.Interfaces;
 using Repository.Repositorys;
-using MySqlConnector;
 
 namespace API
 {
