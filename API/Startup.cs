@@ -13,6 +13,7 @@ using System.Text;
 using AutoMapper;
 using Repository.Interfaces;
 using Repository.Repositorys;
+using API.Models;
 
 namespace API
 {
@@ -61,6 +62,9 @@ namespace API
                     ValidateAudience = false
                 };
             });
+
+            services.AddAuthentication();
+            services.Configure<FacebookAuthSettings>(Configuration.GetSection(nameof(FacebookAuthSettings)));
 
             services.AddAutoMapper(typeof(Startup));
         }

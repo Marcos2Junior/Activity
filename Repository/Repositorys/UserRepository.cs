@@ -18,5 +18,7 @@ namespace Repository.Repositorys
         public async Task<User> VerifyAcessAsync(string password, string email)
             => await _context.Users.FirstOrDefaultAsync(x => x.Password == password && x.Email == email);
 
+        public async Task<User> VerifyByEmailAsync(string email)
+        => await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
     }
 }

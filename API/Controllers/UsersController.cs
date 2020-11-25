@@ -1,31 +1,39 @@
 ﻿using API.Dtos;
+using API.Models;
 using API.Services;
 using AutoMapper;
 using Business.Classes;
 using Domain.Entitys;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using NLog;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Repository.Interfaces;
-using Repository.Repositorys;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user")]
     [ApiController]
     public class UsersController : MainController
     {
         private readonly IUserRepository UserRepository;
         private readonly IMapper Mapper;
+        private static readonly HttpClient Client = new HttpClient();
+        private readonly FacebookAuthSettings _fbAuthSettings;
 
-        public UsersController(IUserRepository userRepository, IMapper mapper, ILogger<UsersController> logger) : base(logger)
+        public UsersController(IConfiguration configuration, IUserRepository userRepository, IMapper mapper, ILogger<UsersController> logger) : base(logger)
         {
+            _fbAuthSettings = new FacebookAuthSettings
+            {
+                AppId = configuration["Authentication:Facebook:AppId"],
+                AppSecret = configuration["Authentication:Facebook:AppSecret"]
+            };
+
             UserRepository = userRepository;
             Mapper = mapper;
         }
@@ -85,5 +93,64 @@ namespace API.Controllers
                 return ErrorException(ex, nameof(Login));
             }
         }
+
+        [HttpPost("auth-Facebook/{authToken}")]
+        public async Task<IActionResult> LoginFacebook(string authToken)
+        {
+            var appAccessTokenResponse = await Client.GetStringAsync($"https://graph.facebook.com/oauth/access_token?client_id={_fbAuthSettings.AppId}&client_secret={_fbAuthSettings.AppSecret}&grant_type=client_credentials");
+            var appAccessToken = JsonConvert.DeserializeObject<FacebookAppAccessToken>(appAccessTokenResponse);
+            var userAccessTokenValidationResponse = await Client.GetStringAsync($"https://graph.facebook.com/debug_token?input_token={authToken}&access_token={appAccessToken.AccessToken}");
+            var userAccessTokenValidation = JsonConvert.DeserializeObject<FacebookUserAccessTokenValidation>(userAccessTokenValidationResponse);
+
+            if (!userAccessTokenValidation.Data.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var userInfoResponse = await Client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,gender,locale,birthday,picture&access_token={authToken}");
+            var userInfo = JsonConvert.DeserializeObject<FacebookUserData>(userInfoResponse);
+
+            User user = await UserRepository.VerifyByEmailAsync(userInfo.Email);
+
+            if (user == null)
+            {
+                var appUser = new User
+                {
+                    Name = userInfo.Name,
+                    Email = userInfo.Email
+                };
+
+                if (!await UserRepository.AddAsync(appUser))
+                {
+                    return BadRequest();
+                }
+
+                user = await UserRepository.VerifyByEmailAsync(userInfo.Email);
+            }
+
+            var newToken = TokenService.GenerateToken(user);
+
+            var userView = Mapper.Map<UserViewDto>(user);
+            return Ok(new
+            {
+                user = userView,
+                token = newToken
+            });
+        }
+
+
+        //[HttpPost("update-password")]
+        //public async Task<IActionResult> UpdatePassword(string oldPassword, string newPassword)
+        //{
+        //    try
+        //    {
+
+        //    }
+        //    catch (Exception)
+        //    {
+
+        //        throw;
+        //    }
+        //}
     }
 }
