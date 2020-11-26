@@ -1,3 +1,4 @@
 
-        <button type="button" (click)="login()" class="btn btn-primary">Sign In With Facebook</button>
-
+        <button *ngIf="!LoggedIn" type="button" (click)="loginWhitFacebook()" class="btn btn-primary">Sign In With Facebook</button>
+        <button *ngIf="!LoggedIn" type="button" (click)="loginWhitAmazon()" class="btn btn-primary">Sign In With Amazon</button>
+        <button *ngIf="LoggedIn" type="button" (click)="logout()" class="btn btn-info">Logout</button>

@@ -12,7 +12,10 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Repository.Interfaces;
 using System;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -23,7 +26,6 @@ namespace API.Controllers
     {
         private readonly IUserRepository UserRepository;
         private readonly IMapper Mapper;
-        private static readonly HttpClient Client = new HttpClient();
         private readonly FacebookAuthSettings _fbAuthSettings;
 
         public UsersController(IConfiguration configuration, IUserRepository userRepository, IMapper mapper, ILogger<UsersController> logger) : base(logger)
@@ -94,12 +96,40 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("auth-Facebook/{authToken}")]
+        private async Task<ReturnLogin> VerifySocialUserAsync(string name, string email)
+        {
+            User user = await UserRepository.VerifyByEmailAsync(email);
+
+            if (user == null)
+            {
+                var appUser = new User
+                {
+                    Name = name,
+                    Email = email
+                };
+
+                if (!await UserRepository.AddAsync(appUser))
+                {
+                    return null;
+                }
+
+                user = await UserRepository.VerifyByEmailAsync(email);
+            }
+
+            var newToken = TokenService.GenerateToken(user);
+
+            var userView = Mapper.Map<UserViewDto>(user);
+            return new ReturnLogin { Token = newToken, UserView = userView };
+
+        }
+
+        [HttpPost("auth-facebook")]
         public async Task<IActionResult> LoginFacebook(string authToken)
         {
-            var appAccessTokenResponse = await Client.GetStringAsync($"https://graph.facebook.com/oauth/access_token?client_id={_fbAuthSettings.AppId}&client_secret={_fbAuthSettings.AppSecret}&grant_type=client_credentials");
+            HttpClient client = new HttpClient();
+            var appAccessTokenResponse = await client.GetStringAsync($"https://graph.facebook.com/oauth/access_token?client_id={_fbAuthSettings.AppId}&client_secret={_fbAuthSettings.AppSecret}&grant_type=client_credentials");
             var appAccessToken = JsonConvert.DeserializeObject<FacebookAppAccessToken>(appAccessTokenResponse);
-            var userAccessTokenValidationResponse = await Client.GetStringAsync($"https://graph.facebook.com/debug_token?input_token={authToken}&access_token={appAccessToken.AccessToken}");
+            var userAccessTokenValidationResponse = await client.GetStringAsync($"https://graph.facebook.com/debug_token?input_token={authToken}&access_token={appAccessToken.AccessToken}");
             var userAccessTokenValidation = JsonConvert.DeserializeObject<FacebookUserAccessTokenValidation>(userAccessTokenValidationResponse);
 
             if (!userAccessTokenValidation.Data.IsValid)
@@ -107,35 +137,32 @@ namespace API.Controllers
                 return BadRequest();
             }
 
-            var userInfoResponse = await Client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,gender,locale,birthday,picture&access_token={authToken}");
+            var userInfoResponse = await client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,gender,locale,birthday,picture&access_token={authToken}");
             var userInfo = JsonConvert.DeserializeObject<FacebookUserData>(userInfoResponse);
 
-            User user = await UserRepository.VerifyByEmailAsync(userInfo.Email);
+            var userResult = await VerifySocialUserAsync(userInfo.Name, userInfo.Email);
 
-            if (user == null)
+            return userResult != null ? StatusCode(200, userResult) : StatusCode(400);
+        }
+
+        [HttpPost("auth-amazon")]
+        public async Task<IActionResult> LoginAmazon(string authToken)
+        {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+
+            var userInfoResponse = await client.GetAsync("https://api.amazon.com/user/profile");
+
+            if (userInfoResponse.StatusCode != HttpStatusCode.OK)
             {
-                var appUser = new User
-                {
-                    Name = userInfo.Name,
-                    Email = userInfo.Email
-                };
-
-                if (!await UserRepository.AddAsync(appUser))
-                {
-                    return BadRequest();
-                }
-
-                user = await UserRepository.VerifyByEmailAsync(userInfo.Email);
+                return BadRequest();
             }
 
-            var newToken = TokenService.GenerateToken(user);
+            var userInfo = JsonConvert.DeserializeObject<AmazonApiResponse>(await userInfoResponse.Content.ReadAsStringAsync());
 
-            var userView = Mapper.Map<UserViewDto>(user);
-            return Ok(new
-            {
-                user = userView,
-                token = newToken
-            });
+            var userResult = await VerifySocialUserAsync(userInfo.Name, userInfo.Email);
+
+            return userResult != null ? StatusCode(200, userResult) : StatusCode(400);
         }
 
 
