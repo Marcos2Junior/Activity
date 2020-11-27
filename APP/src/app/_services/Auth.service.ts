@@ -14,28 +14,18 @@ export class AuthService {
   urlBase = 'http://localhost:41966/api/user/';
   jwtHelper = new JwtHelperService();
 
-
-
   constructor(private http: HttpClient, private authService: SocialAuthService) { }
 
-
-  loginWhitFB(): void {
-    this.authService.signIn(FacebookLoginProvider.PROVIDER_ID).finally();
-    this.getAuthState();
-  }
-
-  loginWhitAmazon(): void {
-    this.authService.signIn(AmazonLoginProvider.PROVIDER_ID).finally();
-    this.getAuthState();
-  }
-
   logout(): void {
-    this.authService.signOut();
+    this.authService.authState.subscribe(() => {
+      this.authService.signOut();
+    });
+
     localStorage.removeItem(KeysApp.localstorageJWT);
   }
 
   checkLogin(): boolean {
-    const token = JSON.parse(localStorage.getItem(KeysApp.localstorageJWT)!);
+    const token = localStorage.getItem(KeysApp.localstorageJWT);
 
     if (!token) {
       return false;
@@ -47,23 +37,10 @@ export class AuthService {
       this.logout();
       return false;
     }
-
     return true;
   }
 
-  private getAuthState(): void {
-
-    this.authService.authState.subscribe((response) => {
-      console.log(response);
-
-      this.loginSocial({
-        provider: response.provider,
-        authToken: response.authToken
-      });
-    });
-  }
-
-  private loginSocial(auth: AuthenticationSocial): void {
+   loginSocial(auth: AuthenticationSocial) {
     let actionAPI = '';
     switch (auth.provider) {
       case 'FACEBOOK':
@@ -77,13 +54,13 @@ export class AuthService {
     }
 
     const url = `${this.urlBase}${actionAPI}?authToken=${auth.authToken}`;
-    this.http.post(url, null).pipe(
+    return this.http.post(url, null).pipe(
       map((responseAPI: any) => {
         const user = responseAPI;
         console.log(responseAPI);
         if (user) {
           localStorage.setItem(KeysApp.localstorageJWT, user.token);
         }
-      })).subscribe();
+      }));
   }
 }
