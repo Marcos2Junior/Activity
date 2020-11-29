@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { ToastrModule } from 'ngx-toastr';
@@ -22,6 +23,7 @@ import { LoginComponent } from './user/login/login.component';
     LoginComponent
    ],
   imports: [
+    CommonModule,
     BrowserModule,
     AppRoutingModule,
     ToastrModule.forRoot({

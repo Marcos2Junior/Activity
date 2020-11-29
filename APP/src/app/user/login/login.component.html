@@ -1,4 +1,62 @@
+<div class="bg">
+<div class="row justify-content-center">
+        <div class="col-md-4">
+            <form class="bg-card">
+                <div class="btn-group-custom">
+                        <button id="btn-amazon" type="button" (click)="loginWhitAmazon()" class="btn">
+                                <i class="fab fa-amazon fa-2x"></i>
+                        </button>
+                        <button id="btn-facebook" type="button" (click)="loginWhitFacebook()" class="btn">
+                                <i class="fab fa-facebook-f fa-2x"></i>
+                        </button>
+                        <button id="btn-google" type="button" (click)="loginWhitAmazon()" class="btn">
+                                <i class="fab fa-google fa-2x"></i>
+                        </button>             
+                </div>
+                    <div class="form-group mb-3">
+                            <h2 class="title-login">
+                                    Faça Login
+                            </h2>
+                    </div>
+                    <hr/>
 
-        <button *ngIf="!LoggedIn" type="button" (click)="loginWhitFacebook()" class="btn btn-primary">Sign In With Facebook</button>
-        <button *ngIf="!LoggedIn" type="button" (click)="loginWhitAmazon()" class="btn btn-primary">Sign In With Amazon</button>
-        <button *ngIf="LoggedIn" type="button" (click)="logout()" class="btn btn-info">Logout</button>
+                <div class="form-group">
+                    <label class="control-label">E-mail ou celular</label>
+                    <input class="form-control" placeholder="Digite seu Email ou celular" />
+                    <span class="text-danger"></span>
+                </div>
+                <div class="form-group">
+
+                    <label class="control-label">Senha</label>
+                    <label class="float-right btn-link">Esqueceu sua senha?</label>
+                    <div class="form-pass-line">
+                        <input #password type="password"  class="form-control" placeholder="Digite sua senha" />
+                        <span class="form-pass" (click)="changeIconPassword()">
+                          <i *ngIf="!HidePassword" class="fas fa-eye-slash"></i>
+                          <i *ngIf="HidePassword" class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                    <span class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success w-100">
+                        Login &nbsp;
+                        <i class="fas fa-sign-in-alt fa-2x"></i>
+                    </button>
+                </div>
+
+                <div class="div-hr mt-5 mb-3">
+                        <span class="text-hr"><hr/>Não possui conta?<hr/>
+                        </span>
+                </div>
+                                <button type="button" class="btn btn-outline-dark text-light w-100"
+                                (click)="router.navigate(['/user/registration'])">
+                                        <i class="fas fa-user-plus mr-2"></i>
+                                        Crie uma conta
+                                </button>
+            </form>   
+            
+           
+        </div>
+      </div>
+</div>

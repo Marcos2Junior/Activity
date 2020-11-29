@@ -1,25 +1,48 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from 'src/app/_services/Auth.service';
 import { FacebookLoginProvider, SocialAuthService, AmazonLoginProvider } from 'angularx-social-login';
+import { Router } from '@angular/router';
 
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private authService: AuthService, private toastr: ToastrService, private socialAuthService: SocialAuthService) {
 
+
+  constructor(
+    private authService: AuthService,
+    private toastr: ToastrService,
+    private socialAuthService: SocialAuthService,
+    public router: Router) {
   }
+
+  @ViewChild('password') password: any;
+  HidePassword = false;
+
 
   LoggedIn = false;
 
   ngOnInit(): void {
-    this.LoggedIn = this.authService.checkLogin();
+    if (this.authService.checkLogin()) {
+      this.router.navigate(['/user/perfil']);
+    }
+  }
 
+  changeIconPassword(): void {
+    console.log(this.password.nativeElement.type);
+    if (this.password.nativeElement.type === 'text') {
+      this.password.nativeElement.type = 'password';
+      this.HidePassword = false;
+    }
+    else {
+      this.password.nativeElement.type = 'text';
+      this.HidePassword = true;
+    }
   }
 
   loginWhitFacebook(): void{

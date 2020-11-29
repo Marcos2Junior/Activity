@@ -1,0 +1,126 @@
+.row{
+	margin-top: 10%;
+}
+.form-pass {
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 10;
+	border: none;
+	background: transparent;
+	outline: none;
+	margin: 7px 15px 0px 0px;
+  }
+  .form-pass-line {
+	position: relative;
+  }
+	.form-pass-line input {
+		width: 100%;
+	}
+
+	.form-pass i {
+		color: #000000;
+		cursor: pointer;
+	}
+
+	i {
+		vertical-align: middle;
+		color: #fff
+	}
+
+	.btn {
+		-webkit-transition: all 0.5s ease-in-out;
+		-moz-transition: all 0.5s ease-in-out;
+		-o-transition: all 0.5s ease-in-out;
+	   	transition: all 0.5s ease-in-out;
+	}
+
+	#btn-facebook {
+		background: #3b5998;
+	}
+
+	#btn-facebook:hover {
+		background-color: #172d5e;
+	}
+
+	#btn-facebook:focus {
+		color: #3b5998; border-color: #3b5998
+	}
+
+	#btn-google {
+background: #c32f10;
+	}
+
+	#btn-google:hover {
+		background-color: #6b1301;
+	}
+
+	#btn-google:focus {
+		 color: #c32f10; border-color: #c32f10
+	}
+
+	#btn-github {
+background: #666666;
+	}
+
+	#btn-github:hover {
+		background-color: #333333;
+	}
+
+	#btn-github:focus {
+		 color: #666666; border-color: #666666
+	}
+
+
+	#btn-amazon {
+		background: #ff8800
+	}
+
+	#btn-amazon:hover {
+		background-color: #c73e04;
+	}
+
+	#btn-amazon:focus {
+		 color: #ff8800; border-color: #ff8800
+	}
+
+	.div-hr {
+		text-align: center;
+	}
+
+	.text-hr {
+		right: auto;
+		right: auto;
+		margin: auto;
+		width: 100%;
+	}
+
+	.text-hr hr {
+		display: inline-block;
+		width: 22%;
+		margin: 5px 10px;
+		border-top: 1px solid #e5e5e5;
+	}
+
+	.btn-group-custom{
+		position: absolute;
+		right: 5%;
+		top: -5%;
+	}
+
+	.btn-group-custom .btn {
+		margin-right: 10px;
+		border-radius: 30%;
+	}
+
+	.btn-link {
+		cursor: pointer;
+	}
+
+
+
+	
+  
+  
+  
+  
