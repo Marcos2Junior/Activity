@@ -10,6 +10,7 @@ namespace API.Helpers
         {
             CreateMap<User, UserViewDto>().ReverseMap();
             CreateMap<User, UserInsertDto>().ReverseMap();
+            CreateMap<Activity, InsertActivityDto>().ReverseMap();
         }
     }
 }

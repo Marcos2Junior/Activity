@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Repository.Interfaces;
 using System;
@@ -22,13 +21,14 @@ namespace API.Controllers
 {
     [Route("api/user")]
     [ApiController]
+    [Authorize]
     public class UsersController : MainController
     {
         private readonly IUserRepository UserRepository;
         private readonly IMapper Mapper;
         private readonly FacebookAuthSettings _fbAuthSettings;
 
-        public UsersController(IConfiguration configuration, IUserRepository userRepository, IMapper mapper, ILogger<UsersController> logger) : base(logger)
+        public UsersController(IConfiguration configuration, IUserRepository userRepository, IMapper mapper, ILogger<UsersController> logger) : base(logger, userRepository)
         {
             _fbAuthSettings = new FacebookAuthSettings
             {
@@ -46,6 +46,9 @@ namespace API.Controllers
         {
             try
             {
+                var ssdf  = GetUserAuthAsync();
+
+
                 var user = Mapper.Map<User>(userInsertDto);
 
                 user.NextPasswordUpdate = DateTime.UtcNow.AddDays(15);
@@ -124,6 +127,7 @@ namespace API.Controllers
         }
 
         [HttpPost("auth-facebook")]
+        [AllowAnonymous]
         public async Task<IActionResult> LoginFacebook(string authToken)
         {
             HttpClient client = new HttpClient();
@@ -146,6 +150,7 @@ namespace API.Controllers
         }
 
         [HttpPost("auth-amazon")]
+        [AllowAnonymous]
         public async Task<IActionResult> LoginAmazon(string authToken)
         {
             HttpClient client = new HttpClient();

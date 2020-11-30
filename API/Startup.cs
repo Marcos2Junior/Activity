@@ -31,7 +31,7 @@ namespace API
             services.AddScoped<IActivityRepository, ActivityRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
 
-            var ConnectionString = "server=localhost;userid=root;password=123456;database=dbactivity";
+            var ConnectionString = "server=localhost;userid=root;password=root;database=dbactivity";
 
             services.AddDbContext<ActivityDbContext>(x =>
            x.UseMySql(ConnectionString, ServerVersion.AutoDetect(ConnectionString),

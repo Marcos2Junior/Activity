@@ -19,8 +19,8 @@ namespace API.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim("name", user.Name),
-                    new Claim("email", user.Email)
+                    new Claim(ClaimTypes.Name, user.Name),
+                    new Claim(ClaimTypes.Email, user.Email)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

@@ -2,6 +2,9 @@
 using Repository.Context;
 using Repository.Interfaces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Repository.Repositorys
@@ -43,6 +46,17 @@ namespace Repository.Repositorys
             }
 
             return await SaveChangesAsync();
+        }
+
+        public async Task<T> GetWhereFirstEntityAsync<T>(Expression<Func<T, bool>> where) where T : class
+        {
+            return await _context.Set<T>().FirstOrDefaultAsync(where);
+
+        }
+
+        public async Task<List<T>> GetWhereAllEntityAsync<T>(Expression<Func<T, bool>> where) where T : class
+        {
+            return await _context.Set<T>().Where(where).ToListAsync();
         }
     }
 }
