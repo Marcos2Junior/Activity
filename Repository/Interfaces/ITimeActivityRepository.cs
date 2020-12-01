@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Repository.Interfaces
 {
-    public interface ITimeActivityRepository
+    public interface ITimeActivityRepository : IMainRepository
     {
-        Task<List<TimeActivity>> GetAllTimeActivitys(bool IncludeIsFinish);
+        
     }
 }

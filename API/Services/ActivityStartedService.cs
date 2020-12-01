@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Timers;
 
 namespace API.Services
@@ -17,9 +18,10 @@ namespace API.Services
     public class ActivityStartedService
     {
         private static Timer Timer;
+        private static DateTime DateTimeBackup;
         private static readonly DirectoryInfo DirectoryInfo = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "Activies"));
         public static bool TimerActive => Timer != null && Timer.Enabled;
-        private static List<PingTimeActivity> PingTimes;
+        public static List<PingTimeActivity> PingTimes { get; private set; }
 
 
         /// <summary>
@@ -27,16 +29,13 @@ namespace API.Services
         /// 
         /// ideia é ir atualizando os pings das atividades na propriedade static "PingTimes" a cada requisição do usuario
         /// isso em intervalos curtos
-        /// 
-        /// dentro do evento do timer terá uma verificação se o ultimo ping do usuario está com intervalo maior que o esperado,
-        /// caso estiver, será definido que o usuario não esta mais executando a atividade.
-        /// 
         /// </summary>
         public static void StartTimer()
         {
             Directory.CreateDirectory(DirectoryInfo.FullName);
 
             ReadAllFiles();
+            DateTimeBackup = DateTime.Now.AddHours(1);
 
             Timer = new Timer
             {
@@ -56,22 +55,64 @@ namespace API.Services
             }
         }
 
+        /// <summary>
+        /// Encerra a atividade do usuario; metodo deve ser chamado junto com o update na base de dados
+        /// </summary>
+        /// <param name="userId"></param>
+        public void FinishActivity(int userId)
+        {
+            var ping = PingTimes.FirstOrDefault(x => x.UserId == userId);
+
+            PingTimes.Remove(ping);
+        }
+
+        /// <summary>
+        /// Inicia uma nova atividade do usuario
+        /// </summary>
+        /// <param name="pingTimeActivity"></param>
         public void Add(PingTimeActivity pingTimeActivity)
         {
             PingTimes.Add(new PingTimeActivity
             {
                 UserId = pingTimeActivity.UserId,
-                LastPing = pingTimeActivity.LastPing
+                Pings = pingTimeActivity.Pings,
+                Finished = false
             });
-
-            WriteAllFile(pingTimeActivity.UserId, pingTimeActivity.LastPing);
         }
 
+        /// <summary>
+        /// Evento do timer; verifica momento de fazer o backup
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
         private static void TimerEvent(object source, ElapsedEventArgs e)
         {
-            ReadAllFiles();
+            if (DateTime.Now >= DateTimeBackup)
+            {
+                DateTimeBackup = DateTimeBackup.AddMinutes(10);
+                Backup();
+            }
         }
 
+        /// <summary>
+        /// Realiza o backup
+        /// </summary>
+        private static void Backup()
+        {
+            foreach (var item in PingTimes)
+            {
+                string values = string.Empty;
+                item.Pings.ForEach(x => values += $"{x}++!");
+
+                using StreamWriter streamWriter = new StreamWriter(Path.Combine(DirectoryInfo.FullName, $"{item.UserId}.txt"));
+                streamWriter.Write(values);
+                streamWriter.Close();
+            }
+        }
+
+        /// <summary>
+        /// Inicia uma nova list pingTimeActivity com os registros do backup
+        /// </summary>
         private static void ReadAllFiles()
         {
             PingTimes = new List<PingTimeActivity>();
@@ -84,19 +125,19 @@ namespace API.Services
                 string result = streamReader.ReadToEnd();
                 streamReader.Close();
 
-                PingTimes.Add(new PingTimeActivity
+                string[] values = result.Split("++!");
+
+                var ping = new PingTimeActivity
                 {
                     UserId = int.Parse(item.Name),
-                    LastPing = DateTime.Parse(result)
-                });
-            }
-        }
+                    Pings = new List<DateTime>()
+                };
 
-        private static void WriteAllFile(int userId, DateTime lastPing)
-        {
-            using StreamWriter streamWriter = new StreamWriter(Path.Combine(DirectoryInfo.FullName, $"{userId}.txt"));
-            streamWriter.Write(lastPing);
-            streamWriter.Close();
+                foreach (var value in values)
+                {
+                    ping.Pings.Add(DateTime.Parse(value));
+                }
+            }
         }
     }
 }
