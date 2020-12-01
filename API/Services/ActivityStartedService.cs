@@ -18,7 +18,6 @@ namespace API.Services
     public class ActivityStartedService
     {
         private static Timer Timer;
-        private static DateTime DateTimeBackup;
         private static readonly DirectoryInfo DirectoryInfo = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "Activies"));
         public static bool TimerActive => Timer != null && Timer.Enabled;
         public static List<PingTimeActivity> PingTimes { get; private set; }
@@ -35,11 +34,11 @@ namespace API.Services
             Directory.CreateDirectory(DirectoryInfo.FullName);
 
             ReadAllFiles();
-            DateTimeBackup = DateTime.Now.AddHours(1);
 
             Timer = new Timer
             {
-                Interval = 50000,
+                //define intervalo da execução do backup para 5 minutos
+                Interval = 300000,
                 AutoReset = true,
                 Enabled = true
             };
@@ -73,7 +72,10 @@ namespace API.Services
         public static void PingActivity(int userId)
         {
             var ping = PingTimes.FirstOrDefault(x => x.UserId == userId);
-            ping.Pings.Add(DateTime.UtcNow);
+            if (ping != null)
+            {
+                ping.Pings.Add(DateTime.UtcNow);
+            }
         }
 
         /// <summary>
@@ -90,17 +92,13 @@ namespace API.Services
         }
 
         /// <summary>
-        /// Evento do timer; verifica momento de fazer o backup
+        /// Evento do timer;
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
         private static void TimerEvent(object source, ElapsedEventArgs e)
         {
-            if (DateTime.Now >= DateTimeBackup)
-            {
-                DateTimeBackup = DateTimeBackup.AddMinutes(10);
-                Backup();
-            }
+            Backup();
         }
 
         /// <summary>
@@ -111,7 +109,7 @@ namespace API.Services
             foreach (var item in PingTimes)
             {
                 string values = string.Empty;
-                item.Pings.ForEach(x => values += $"{x}++!");
+                item.Pings.ForEach(x => values += $"{x}+!");
 
                 using StreamWriter streamWriter = new StreamWriter(Path.Combine(DirectoryInfo.FullName, $"{item.UserId}.txt"));
                 streamWriter.Write(values);
@@ -134,18 +132,20 @@ namespace API.Services
                 string result = streamReader.ReadToEnd();
                 streamReader.Close();
 
-                string[] values = result.Split("++!");
+                string[] values = result.Split("+!");
 
                 var ping = new PingTimeActivity
                 {
-                    UserId = int.Parse(item.Name),
+                    UserId = int.Parse(item.Name.Replace(".txt", string.Empty)),
                     Pings = new List<DateTime>()
                 };
 
-                foreach (var value in values)
+                foreach (var value in values.Where(x => !string.IsNullOrEmpty(x)))
                 {
                     ping.Pings.Add(DateTime.Parse(value));
                 }
+
+                PingTimes.Add(ping);
             }
         }
     }

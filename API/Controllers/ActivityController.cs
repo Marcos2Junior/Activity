@@ -57,8 +57,6 @@ namespace API.Controllers
                 }
 
                 return BadRequest();
-
-
             }
             catch (Exception ex)
             {
@@ -79,7 +77,7 @@ namespace API.Controllers
                 {
                     if (activity.UserId == user.Id)
                     {
-                        if (activity.TimeActivities.Any(x => !x.Finish.HasValue))
+                        if (activity.TimeActivities.Any(x => !x.Finish.HasValue) || !activity.TimeActivities.Any())
                         {
                             await ActivityRepository.AddAsync(new TimeActivity
                             {

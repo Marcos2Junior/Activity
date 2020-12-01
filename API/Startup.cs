@@ -14,6 +14,7 @@ using AutoMapper;
 using Repository.Interfaces;
 using Repository.Repositorys;
 using API.Models;
+using API.Services;
 
 namespace API
 {
@@ -90,6 +91,8 @@ namespace API
             {
                 endpoints.MapControllers();
             });
+
+            ActivityStartedService.StartTimer();
         }
     }
 }
