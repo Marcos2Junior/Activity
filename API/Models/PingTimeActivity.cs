@@ -7,6 +7,5 @@ namespace API.Models
     {
         public int UserId { get; set; }
         public List<DateTime> Pings { get; set; }
-        public bool Finished { get; set; }
     }
 }

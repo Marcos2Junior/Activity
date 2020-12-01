@@ -1,4 +1,5 @@
 ﻿using API.Dtos;
+using API.Services;
 using AutoMapper;
 using Domain.Entitys;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Repository.Interfaces;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -28,7 +30,7 @@ namespace API.Controllers
         {
             var user = await GetUserAuthAsync();
 
-            if(user == null)
+            if (user == null)
             {
                 return NotFound();
             }
@@ -43,13 +45,13 @@ namespace API.Controllers
             {
                 var user = await GetUserAuthAsync();
 
-                if(user == null) { return BadRequest("user is not authenticated"); }
+                if (user == null) { return BadRequest("user is not authenticated"); }
 
                 var activity = Mapper.Map<Activity>(insertActivityDto);
                 activity.Date = DateTime.UtcNow;
                 activity.UserId = user.Id;
 
-                if(await ActivityRepository.AddAsync(activity))
+                if (await ActivityRepository.AddAsync(activity))
                 {
                     return Created(nameof(Get), activity);
                 }
@@ -67,13 +69,64 @@ namespace API.Controllers
         [HttpPost("start")]
         public async Task<IActionResult> StartTimeActivity(int idActivity)
         {
-            return Ok();
+            try
+            {
+                var user = await GetUserAuthAsync();
+
+                var activity = await ActivityRepository.GetActivityByIdAsync(idActivity);
+
+                if (activity != null)
+                {
+                    if (activity.UserId == user.Id)
+                    {
+                        if (activity.TimeActivities.Any(x => !x.Finish.HasValue))
+                        {
+                            await ActivityRepository.AddAsync(new TimeActivity
+                            {
+                                ActivityId = activity.Id,
+                                DateInitial = DateTime.UtcNow
+                            });
+
+                            ActivityStartedService.Add(user.Id);
+
+                            return Ok();
+                        }
+                        else
+                        {
+                            //Informa ao usuario de que ele não pode iniciar duas atividades com timer ao mesmo tempo
+                            return NoContent();
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest("this activity is not referenced to user authenticated");
+                    }
+                }
+                else
+                {
+                    return NotFound("id activity is not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return ErrorException(ex, nameof(StartTimeActivity));
+            }
         }
 
         [HttpPost("ping")]
         public async Task<IActionResult> PingTimeActivity()
         {
-            return Ok();
+            try
+            {
+                var user = await GetUserAuthAsync();
+                ActivityStartedService.PingActivity(user.Id);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return ErrorException(ex, nameof(PingTimeActivity));
+            }
         }
     }
 }

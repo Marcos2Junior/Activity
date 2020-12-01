@@ -59,7 +59,7 @@ namespace API.Services
         /// Encerra a atividade do usuario; metodo deve ser chamado junto com o update na base de dados
         /// </summary>
         /// <param name="userId"></param>
-        public void FinishActivity(int userId)
+        public static void FinishActivity(int userId)
         {
             var ping = PingTimes.FirstOrDefault(x => x.UserId == userId);
 
@@ -67,16 +67,25 @@ namespace API.Services
         }
 
         /// <summary>
-        /// Inicia uma nova atividade do usuario
+        /// acrescenta na list ping do usuario a data atual
         /// </summary>
-        /// <param name="pingTimeActivity"></param>
-        public void Add(PingTimeActivity pingTimeActivity)
+        /// <param name="userId"></param>
+        public static void PingActivity(int userId)
+        {
+            var ping = PingTimes.FirstOrDefault(x => x.UserId == userId);
+            ping.Pings.Add(DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// Inicia uma nova atividade timer do usuario
+        /// </summary>
+        /// <param name="userId"></param>
+        public static void Add(int userId)
         {
             PingTimes.Add(new PingTimeActivity
             {
-                UserId = pingTimeActivity.UserId,
-                Pings = pingTimeActivity.Pings,
-                Finished = false
+                UserId = userId,
+                Pings = new List<DateTime> { DateTime.UtcNow },
             });
         }
 

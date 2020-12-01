@@ -15,11 +15,11 @@ namespace Repository.Repositorys
         {
         }
 
-        public async Task<Activity> GetActivityByIdAsync(int userId) =>
+        public async Task<Activity> GetActivityByIdAsync(int id) =>
                 await _context.Activitys
                 .Include(x => x.TimeActivities)
                 .Include(x => x.ActivityTechnologies).ThenInclude(x => x.Technology)
-                .FirstOrDefaultAsync(x => x.UserId == userId);
+                .FirstOrDefaultAsync(x => x.Id == id);
 
 
         public async Task<List<Activity>> GetAllActivityAsync(int userId, DateTime dateInit, DateTime dateFinish, bool includeTime = false, bool includeTechnology = false)
