@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace API.Controllers
 {
+    [TypeFilter(typeof(CustomAuthorize))]
     public class MainController : ControllerBase
     {
         protected readonly ILogger<ControllerBase> _logger;
@@ -27,14 +28,7 @@ namespace API.Controllers
             return StatusCode(500, "Ocorreu um erro interno com o tratamento dos dados.");
         }
 
-        protected async Task<User> GetUserAuthAsync()
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return null;
-            }
-
-            return await MainRepository.GetWhereFirstEntityAsync<User>(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
-        }
+        protected async Task<User> GetUserAuthAsync() => 
+            await MainRepository.GetWhereFirstEntityAsync<User>(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
     }
 }

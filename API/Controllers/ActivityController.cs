@@ -14,7 +14,6 @@ namespace API.Controllers
 {
     [Route("api/activity")]
     [ApiController]
-    [Authorize]
     public class ActivityController : MainController
     {
         private readonly IActivityRepository ActivityRepository;
@@ -25,17 +24,46 @@ namespace API.Controllers
             ActivityRepository = activityRepository;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        [HttpGet("get-activity")]
+        public async Task<IActionResult> Get(int activityId)
         {
-            var user = await GetUserAuthAsync();
+            var activityResult = await SelectActivityAsync(activityId);
 
-            if (user == null)
+            if (activityResult.StatusCode != 200) { return activityResult; }
+
+            var activity = Mapper.Map<ViewActivityDto>(activityResult.Value);
+
+            return Ok(activity);
+        }
+
+        private async Task<ObjectResult> SelectActivityAsync(int idActivity)
+        {
+            try
             {
-                return NotFound();
-            }
+                var user = await GetUserAuthAsync();
 
-            return Ok(user);
+                var activity = await ActivityRepository.GetActivityByIdAsync(idActivity);
+
+                if (activity != null)
+                {
+                    if (activity.UserId == user.Id)
+                    {
+                        return StatusCode(200, activity);
+                    }
+                    else
+                    {
+                        return BadRequest("this activity is not referenced to user authenticated");
+                    }
+                }
+                else
+                {
+                    return NotFound("id activity is not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
 
         [HttpPost("new-activity")]
@@ -44,8 +72,6 @@ namespace API.Controllers
             try
             {
                 var user = await GetUserAuthAsync();
-
-                if (user == null) { return BadRequest("user is not authenticated"); }
 
                 var activity = Mapper.Map<Activity>(insertActivityDto);
                 activity.Date = DateTime.UtcNow;
@@ -69,40 +95,27 @@ namespace API.Controllers
         {
             try
             {
-                var user = await GetUserAuthAsync();
+                var activityObject = await SelectActivityAsync(idActivity);
 
-                var activity = await ActivityRepository.GetActivityByIdAsync(idActivity);
+                if (activityObject.StatusCode != 200) { return activityObject; }
 
-                if (activity != null)
+                var activity = (Activity)activityObject.Value;
+
+                if (activity.TimeActivities.Any(x => !x.Finished) || !activity.TimeActivities.Any())
                 {
-                    if (activity.UserId == user.Id)
+                    await ActivityRepository.AddAsync(new TimeActivity
                     {
-                        if (activity.TimeActivities.Any(x => !x.Finish.HasValue) || !activity.TimeActivities.Any())
-                        {
-                            await ActivityRepository.AddAsync(new TimeActivity
-                            {
-                                ActivityId = activity.Id,
-                                DateInitial = DateTime.UtcNow
-                            });
+                        ActivityId = activity.Id,
+                        DateInitial = DateTime.UtcNow,
+                        Finished = false
+                    });
 
-                            ActivityStartedService.Add(user.Id);
-
-                            return Ok();
-                        }
-                        else
-                        {
-                            //Informa ao usuario de que ele não pode iniciar duas atividades com timer ao mesmo tempo
-                            return NoContent();
-                        }
-                    }
-                    else
-                    {
-                        return BadRequest("this activity is not referenced to user authenticated");
-                    }
+                    return Ok();
                 }
                 else
                 {
-                    return NotFound("id activity is not found");
+                    //Informa ao usuario de que ele não pode iniciar duas atividades com timer ao mesmo tempo
+                    return NoContent();
                 }
             }
             catch (Exception ex)
@@ -112,12 +125,13 @@ namespace API.Controllers
         }
 
         [HttpPost("ping")]
-        public async Task<IActionResult> PingTimeActivity()
+        public async Task<IActionResult> PingTimeActivity(TimeSpan timeSpan)
         {
             try
             {
                 var user = await GetUserAuthAsync();
-                ActivityStartedService.PingActivity(user.Id);
+
+                await ActivityRepository.PingTimeActivityAsync(user.Id, timeSpan);
 
                 return Ok();
             }

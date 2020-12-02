@@ -21,7 +21,6 @@ namespace Repository.Repositorys
                 .Include(x => x.ActivityTechnologies).ThenInclude(x => x.Technology)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
-
         public async Task<List<Activity>> GetAllActivityAsync(int userId, DateTime dateInit, DateTime dateFinish, bool includeTime = false, bool includeTechnology = false)
         {
             List<Activity> activities = new List<Activity>();
@@ -58,6 +57,22 @@ namespace Repository.Repositorys
                 .ThenBy(x => x.TypeActivity)
                 .ThenBy(x => x.Name)
                 .ToList();
+        }
+
+        public async Task PingTimeActivityAsync(int userId, TimeSpan timeSpan)
+        {
+            var timeActivity = await _context
+                .Activitys
+                .Where(x => x.UserId == userId)
+                .Include(x => x.TimeActivities)
+                .SelectMany(x => x.TimeActivities)
+                .FirstOrDefaultAsync(x => !x.Finished);
+
+            if (timeActivity != null)
+            {
+                timeActivity.TimeSpan = timeSpan;
+                await UpdateAsync(timeActivity);
+            }
         }
     }
 }

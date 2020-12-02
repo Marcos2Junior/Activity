@@ -15,6 +15,7 @@ using Repository.Interfaces;
 using Repository.Repositorys;
 using API.Models;
 using API.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API
 {
@@ -31,6 +32,7 @@ namespace API
         {
             services.AddScoped<IActivityRepository, ActivityRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddSingleton(typeof(CustomAuthorize));
 
             var ConnectionString = "server=localhost;userid=root;password=root;database=dbactivity";
 
@@ -64,7 +66,6 @@ namespace API
                 };
             });
 
-            services.AddAuthentication();
             services.Configure<FacebookAuthSettings>(Configuration.GetSection(nameof(FacebookAuthSettings)));
 
             services.AddAutoMapper(typeof(Startup));
