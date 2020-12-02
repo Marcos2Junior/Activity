@@ -2,11 +2,10 @@
 
 namespace API.Dtos
 {
-    public class UserViewDto
+    public class TechnologyDto
     {
         public string Name { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
+        public string Description { get; set; }
         public DateTime Date { get; set; }
     }
 }

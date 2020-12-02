@@ -73,17 +73,17 @@ namespace Business.Classes
 
         public static string HashValue(string value)
         {
-            byte[] hashBytes;
-            using (HashAlgorithm hash = SHA1.Create())
-                hashBytes = hash.ComputeHash(new UnicodeEncoding().GetBytes(value));
+            var bytes = Encoding.UTF8.GetBytes(value);
+            using var hash = SHA512.Create();
+            var hashedInputBytes = hash.ComputeHash(bytes);
 
-            StringBuilder hashValue = new StringBuilder(hashBytes.Length * 2);
-            foreach (byte b in hashBytes)
+            var hashedInputStringBuilder = new StringBuilder(128);
+            foreach (var b in hashedInputBytes)
             {
-                hashValue.AppendFormat(CultureInfo.InvariantCulture, "{0:X2}", b);
+                hashedInputStringBuilder.Append(b.ToString("X2"));
             }
 
-            return hashValue.ToString();
+            return hashedInputStringBuilder.ToString();
         }
     }
 }

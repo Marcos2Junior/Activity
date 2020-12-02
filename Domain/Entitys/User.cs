@@ -19,10 +19,11 @@ namespace Domain.Entitys
         public string PhoneNumber { get; set; }
 
         [DataType(DataType.Password)]
-        [StringLength(40)] //is default result hash
+        [StringLength(128)] //is default result hash
         public string Password { get; set; }
 
-        [DataType(DataType.DateTime)]
-        public DateTime? NextPasswordUpdate { get; set; }
+        public long? NextPasswordUpdate { get; set; }
+
+        public long Date { get; set; }
     }
 }

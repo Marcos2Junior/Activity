@@ -7,7 +7,7 @@ namespace Domain.Entitys
         public int Id { get; set; }
         public int ActivityId { get; set; }
         public Activity Activity { get; set; }
-        public DateTime DateInitial { get; set; }
+        public long DateInitial { get; set; }
         public TimeSpan TimeSpan { get; set; }
         public bool Finished { get; set; }
     }

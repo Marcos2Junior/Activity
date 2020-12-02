@@ -14,11 +14,11 @@ namespace Domain.Entitys
         public Priority Priority { get; set; }
         public TypeActivity TypeActivity { get; set; }
         public string DetailsFinish { get; set; }
-        public DateTime? ExpectecStartDate { get; set; }
-        public DateTime? FinishMaximum { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? FinishDate { get; set; }
-        public DateTime Date { get; set; }
+        public long? ExpectecStartDate { get; set; }
+        public long? FinishMaximum { get; set; }
+        public long? StartDate { get; set; }
+        public long? FinishDate { get; set; }
+        public long Date { get; set; }
         public List<TimeActivity> TimeActivities { get; set; }
         public List<ActivityTechnology> ActivityTechnologies { get; set; }
     }

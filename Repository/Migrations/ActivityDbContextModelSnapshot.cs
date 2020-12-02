@@ -135,6 +135,9 @@ namespace Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -149,8 +152,8 @@ namespace Repository.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Password")
-                        .HasMaxLength(40)
-                        .HasColumnType("varchar(40) CHARACTER SET utf8mb4");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128) CHARACTER SET utf8mb4");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(15)

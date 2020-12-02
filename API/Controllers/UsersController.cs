@@ -46,13 +46,11 @@ namespace API.Controllers
         {
             try
             {
-                var ssdf  = GetUserAuthAsync();
-
-
                 var user = Mapper.Map<User>(userInsertDto);
 
-                user.NextPasswordUpdate = DateTime.UtcNow.AddDays(15);
+                user.NextPasswordUpdate = DateTimeOffset.Now.AddDays(15).Ticks;
                 user.Password = Encript.HashValue(user.Password);
+                user.Date = DateTimeOffset.Now.Ticks;
 
                 if (await UserRepository.AddAsync(user))
                 {
@@ -108,7 +106,8 @@ namespace API.Controllers
                 var appUser = new User
                 {
                     Name = name,
-                    Email = email
+                    Email = email,
+                    Date = DateTimeOffset.Now.Ticks
                 };
 
                 if (!await UserRepository.AddAsync(appUser))

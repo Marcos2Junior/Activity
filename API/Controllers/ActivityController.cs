@@ -73,7 +73,7 @@ namespace API.Controllers
                 var user = await GetUserAuthAsync();
 
                 var activity = Mapper.Map<Activity>(insertActivityDto);
-                activity.Date = DateTime.UtcNow;
+                activity.Date = DateTimeOffset.Now.Ticks;
                 activity.UserId = user.Id;
 
                 if (await ActivityRepository.AddAsync(activity))
@@ -107,7 +107,7 @@ namespace API.Controllers
                     await ActivityRepository.AddAsync(new TimeActivity
                     {
                         ActivityId = activity.Id,
-                        DateInitial = DateTime.UtcNow,
+                        DateInitial = DateTimeOffset.Now.Ticks,
                         Finished = false
                     });
 

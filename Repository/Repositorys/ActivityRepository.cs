@@ -25,7 +25,7 @@ namespace Repository.Repositorys
         {
             List<Activity> activities = new List<Activity>();
 
-            var query = from activity in _context.Activitys where activity.UserId == userId && activity.Date >= dateInit && activity.Date <= dateFinish select activity;
+            var query = from activity in _context.Activitys where activity.UserId == userId && activity.Date >= dateInit.Ticks && activity.Date <= dateFinish.Ticks select activity;
 
             if (includeTime && includeTechnology)
             {

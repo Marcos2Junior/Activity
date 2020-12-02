@@ -20,6 +20,6 @@ namespace API.Dtos
         public DateTime? FinishDate { get; set; }
         public DateTime Date { get; set; }
         public List<TimeActivityDto> TimeActivitiesDto { get; set; }
-        public List<ActivityTechnologyDto> ActivityTechnologiesDto { get; set; }
+        public List<TechnologyDto> TechnologiesDto { get; set; }
     }
 }

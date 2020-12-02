@@ -9,7 +9,7 @@ using Repository.Context;
 namespace Repository.Migrations
 {
     [DbContext(typeof(ActivityDbContext))]
-    [Migration("20201202014151_init")]
+    [Migration("20201202200614_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -137,6 +137,9 @@ namespace Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -151,8 +154,8 @@ namespace Repository.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Password")
-                        .HasMaxLength(40)
-                        .HasColumnType("varchar(40) CHARACTER SET utf8mb4");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128) CHARACTER SET utf8mb4");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(15)
