@@ -2,7 +2,6 @@
 using API.Services;
 using AutoMapper;
 using Domain.Entitys;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Repository.Interfaces;
@@ -79,7 +78,9 @@ namespace API.Controllers
 
                 if (await ActivityRepository.AddAsync(activity))
                 {
-                    return Created(nameof(Get), activity);
+                    var activityReturn = Mapper.Map<ViewActivityDto>(activity);
+
+                    return Created(nameof(Get), activityReturn);
                 }
 
                 return BadRequest();

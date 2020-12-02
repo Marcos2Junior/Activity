@@ -24,6 +24,8 @@ namespace API
         {
             try
             {
+                if (context.ActionDescriptor.EndpointMetadata.OfType<AllowAnonymousAttribute>().Any()) { return; }
+
                 if (!context.HttpContext.User.Identity.IsAuthenticated &&
                     !_context.Users.Any(x => x.Email == context.HttpContext.User.FindFirstValue(ClaimTypes.Email)))
                 {

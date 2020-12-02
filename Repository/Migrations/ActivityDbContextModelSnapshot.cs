@@ -116,8 +116,11 @@ namespace Repository.Migrations
                     b.Property<DateTime>("DateInitial")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("Finish")
-                        .HasColumnType("datetime(6)");
+                    b.Property<bool>("Finished")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<TimeSpan>("TimeSpan")
+                        .HasColumnType("time(6)");
 
                     b.HasKey("Id");
 

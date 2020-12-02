@@ -34,7 +34,7 @@ namespace API
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddSingleton(typeof(CustomAuthorize));
 
-            var ConnectionString = "server=localhost;userid=root;password=root;database=dbactivity";
+            var ConnectionString = "server=localhost;userid=root;password=123456;database=dbactivity";
 
             services.AddDbContext<ActivityDbContext>(x =>
            x.UseMySql(ConnectionString, ServerVersion.AutoDetect(ConnectionString),
@@ -92,8 +92,6 @@ namespace API
             {
                 endpoints.MapControllers();
             });
-
-            ActivityStartedService.StartTimer();
         }
     }
 }

@@ -103,7 +103,8 @@ namespace Repository.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ActivityId = table.Column<int>(type: "int", nullable: false),
                     DateInitial = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    Finish = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                    TimeSpan = table.Column<TimeSpan>(type: "time(6)", nullable: false),
+                    Finished = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -9,7 +9,7 @@ using Repository.Context;
 namespace Repository.Migrations
 {
     [DbContext(typeof(ActivityDbContext))]
-    [Migration("20201126194845_init")]
+    [Migration("20201202014151_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -118,8 +118,11 @@ namespace Repository.Migrations
                     b.Property<DateTime>("DateInitial")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("Finish")
-                        .HasColumnType("datetime(6)");
+                    b.Property<bool>("Finished")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<TimeSpan>("TimeSpan")
+                        .HasColumnType("time(6)");
 
                     b.HasKey("Id");
 
