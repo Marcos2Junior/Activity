@@ -22,8 +22,8 @@ namespace Domain.Entitys
         [StringLength(128)] //is default result hash
         public string Password { get; set; }
 
-        public long? NextPasswordUpdate { get; set; }
+        public DateTime? NextPasswordUpdate { get; set; }
 
-        public long Date { get; set; }
+        public DateTime Date { get; set; }
     }
 }

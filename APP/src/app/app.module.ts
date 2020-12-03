@@ -6,12 +6,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { SocialLoginModule, FacebookLoginProvider, SocialAuthServiceConfig, AmazonLoginProvider } from 'angularx-social-login';
 
+import { AuthService } from './_services/Auth.service';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { UserComponent } from './user/user.component';
 import { RegistrationComponent } from './user/registration/registration.component';
 import { LoginComponent } from './user/login/login.component';
+import { AuthInterceptor } from './_services/Auth.interceptor';
 
 
 
@@ -36,6 +38,12 @@ import { LoginComponent } from './user/login/login.component';
    SocialLoginModule
   ],
   providers: [
+    AuthService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass : AuthInterceptor,
+      multi: true
+    },
     {
       provide: 'SocialAuthServiceConfig',
       useValue: {

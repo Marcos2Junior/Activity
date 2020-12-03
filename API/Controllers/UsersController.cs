@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Repository.Interfaces;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -48,9 +49,9 @@ namespace API.Controllers
             {
                 var user = Mapper.Map<User>(userInsertDto);
 
-                user.NextPasswordUpdate = DateTimeOffset.Now.AddDays(15).Ticks;
+                user.NextPasswordUpdate = DateTimeOffset.UtcNow.AddDays(15).DateTime;
                 user.Password = Encript.HashValue(user.Password);
-                user.Date = DateTimeOffset.Now.Ticks;
+                user.Date = DateTimeOffset.UtcNow.Date;
 
                 if (await UserRepository.AddAsync(user))
                 {
@@ -79,9 +80,20 @@ namespace API.Controllers
 
                 if (_user != null)
                 {
-                    var newToken = TokenService.GenerateToken(_user);
+                    string utcHeader = HttpContext.Request?.Headers["time_zone"];
+                    
+                    if (string.IsNullOrEmpty(utcHeader) || !int.TryParse(utcHeader, out int utc))
+                    {
+                        return BadRequest("could not identify time zone");
+                    }
+
+                    utc = utc / 60 * -1;
+
+                    var newToken = TokenService.GenerateToken(_user, utc.ToString());
 
                     var userView = Mapper.Map<UserViewDto>(_user);
+
+                    userView.Date = new DateTimeOffset(DateTime.Now, new TimeSpan(utc, 0, 0)).DateTime;
                     return Ok(new
                     {
                         user = userView,
@@ -97,7 +109,7 @@ namespace API.Controllers
             }
         }
 
-        private async Task<ReturnLogin> VerifySocialUserAsync(string name, string email)
+        private async Task<ReturnLogin> VerifySocialUserAsync(string name, string email, string utc)
         {
             User user = await UserRepository.VerifyByEmailAsync(email);
 
@@ -107,7 +119,7 @@ namespace API.Controllers
                 {
                     Name = name,
                     Email = email,
-                    Date = DateTimeOffset.Now.Ticks
+                    Date = DateTimeOffset.UtcNow.DateTime
                 };
 
                 if (!await UserRepository.AddAsync(appUser))
@@ -118,7 +130,8 @@ namespace API.Controllers
                 user = await UserRepository.VerifyByEmailAsync(email);
             }
 
-            var newToken = TokenService.GenerateToken(user);
+
+            var newToken = TokenService.GenerateToken(user, utc);
 
             var userView = Mapper.Map<UserViewDto>(user);
             return new ReturnLogin { Token = newToken, UserView = userView };
@@ -143,7 +156,17 @@ namespace API.Controllers
             var userInfoResponse = await client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,gender,locale,birthday,picture&access_token={authToken}");
             var userInfo = JsonConvert.DeserializeObject<FacebookUserData>(userInfoResponse);
 
-            var userResult = await VerifySocialUserAsync(userInfo.Name, userInfo.Email);
+            string utcHeader = HttpContext.Request?.Headers["time_zone"];
+
+            if (string.IsNullOrEmpty(utcHeader) || !int.TryParse(utcHeader, out int utc))
+            {
+                return BadRequest("could not identify time zone");
+            }
+
+            utc = utc / 60 * -1;
+
+
+            var userResult = await VerifySocialUserAsync(userInfo.Name, userInfo.Email, utc.ToString());
 
             return userResult != null ? StatusCode(200, userResult) : StatusCode(400);
         }
@@ -164,7 +187,16 @@ namespace API.Controllers
 
             var userInfo = JsonConvert.DeserializeObject<AmazonApiResponse>(await userInfoResponse.Content.ReadAsStringAsync());
 
-            var userResult = await VerifySocialUserAsync(userInfo.Name, userInfo.Email);
+            string utcHeader = HttpContext.Request?.Headers["time_zone"];
+
+            if (string.IsNullOrEmpty(utcHeader) || !int.TryParse(utcHeader, out int utc))
+            {
+                return BadRequest("could not identify time zone");
+            }
+
+            utc = utc / 60 * -1;
+
+            var userResult = await VerifySocialUserAsync(userInfo.Name, userInfo.Email, utc.ToString());
 
             return userResult != null ? StatusCode(200, userResult) : StatusCode(400);
         }

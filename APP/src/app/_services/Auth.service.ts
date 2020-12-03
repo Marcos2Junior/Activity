@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { FacebookLoginProvider, SocialAuthService, AmazonLoginProvider } from 'angularx-social-login';
 import { map } from 'rxjs/operators';
@@ -53,8 +53,10 @@ export class AuthService {
         break;
     }
 
+    const header = new HttpHeaders({ 'time_zone': `${new Date().getTimezoneOffset()}` });
+
     const url = `${this.urlBase}${actionAPI}?authToken=${auth.authToken}`;
-    return this.http.post(url, null).pipe(
+    return this.http.post(url, null, { headers: header}).pipe(
       map((responseAPI: any) => {
         const user = responseAPI;
         console.log(responseAPI);
