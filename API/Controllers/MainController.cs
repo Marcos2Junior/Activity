@@ -28,8 +28,11 @@ namespace API.Controllers
             return StatusCode(500, "Ocorreu um erro interno com o tratamento dos dados.");
         }
 
+        protected DateTime? GetDateTimeZoneUser(DateTime? dateTime) =>
+            dateTime.HasValue ? new DateTimeOffset(dateTime.Value, new TimeSpan(int.Parse(User.FindFirst("utc").Value), 0, 0)).DateTime : null;
 
-        protected async Task<User> GetUserAuthAsync() => 
+
+        protected async Task<User> GetUserAuthAsync() =>
             await MainRepository.GetWhereFirstEntityAsync<User>(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
     }
 }

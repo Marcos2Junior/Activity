@@ -32,9 +32,7 @@ namespace API.Controllers
 
             var activity = Mapper.Map<ViewActivityDto>(activityResult.Value);
 
-            //User.FindFirst("utc")?.Value
-
-            return Ok(activity);
+            return Ok(ChangeDateTimeActivity(activity));
         }
 
         private async Task<ObjectResult> SelectActivityAsync(int idActivity)
@@ -82,7 +80,7 @@ namespace API.Controllers
                 {
                     var activityReturn = Mapper.Map<ViewActivityDto>(activity);
 
-                    return Created(nameof(Get), activityReturn);
+                    return Created(nameof(Get), ChangeDateTimeActivity(activityReturn));
                 }
 
                 return BadRequest();
@@ -142,6 +140,26 @@ namespace API.Controllers
             {
                 return ErrorException(ex, nameof(PingTimeActivity));
             }
+        }
+
+        private ViewActivityDto ChangeDateTimeActivity(ViewActivityDto viewActivityDto)
+        {
+            viewActivityDto.Date = GetDateTimeZoneUser(viewActivityDto.Date).Value;
+            viewActivityDto.ExpectecStartDate = GetDateTimeZoneUser(viewActivityDto.ExpectecStartDate);
+            viewActivityDto.FinishDate = GetDateTimeZoneUser(viewActivityDto.FinishDate);
+            viewActivityDto.FinishMaximum = GetDateTimeZoneUser(viewActivityDto.FinishMaximum);
+            viewActivityDto.StartDate = GetDateTimeZoneUser(viewActivityDto.StartDate);
+
+            foreach (var tech in viewActivityDto.TechnologiesDto)
+            {
+                tech.Date = GetDateTimeZoneUser(tech.Date).Value;
+            }
+
+            foreach (var time in viewActivityDto.TimeActivitiesDto)
+            {
+                time.DateInitial = GetDateTimeZoneUser(time.DateInitial).Value;
+            }
+            return viewActivityDto;
         }
     }
 }
